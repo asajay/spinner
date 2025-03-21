@@ -274,12 +274,12 @@ footer {
 
 .winner-announcement {
     position: fixed;
-    top: 50%;
-    left: 50%;
+    top: 65%;
+    left: 46%;
     transform: translate(-50%, -50%);
-    background: white;
-    padding: 2rem;
-    border-radius: 10px;
+    background: #ffffffc9;
+    padding: 1rem;
+    border-radius: 16px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
     text-align: center;
     z-index: 1000;
@@ -306,6 +306,7 @@ footer {
     cursor: pointer;
     font-size: 1rem;
     transition: background-color 0.2s;
+    margin: 7px;
 }
 
 .winner-announcement button:hover {
@@ -364,40 +365,63 @@ footer {
     align-items: center;
     flex-direction: column;
     overflow: hidden;
+    padding: 20px;
 }
 
 .celebration-content {
     text-align: center;
     color: white;
-    animation: scaleIn 0.5s ease-out;
     z-index: 1000;
     background: rgba(0, 0, 0, 0.3);
-    padding: 2rem 4rem;
+    padding: 2rem;
     border-radius: 20px;
+    width: 90%;
+    max-width: 600px;
+    box-sizing: border-box;
 }
 
 .celebration-content h1 {
-    font-size: 4rem;
+    font-size: clamp(2rem, 5vw, 4rem);
     margin-bottom: 1.5rem;
     color: #FFD700;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    line-height: 1.2;
 }
 
 .celebration-content p {
-    font-size: 2.5rem;
+    font-size: clamp(1.5rem, 4vw, 2.5rem);
     color: #FFD700;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
     font-weight: bold;
+    line-height: 1.3;
+    word-wrap: break-word;
 }
 
-@keyframes scaleIn {
-    from {
-        transform: scale(0);
-        opacity: 0;
+@media (max-width: 768px) {
+    .celebration-content {
+        padding: 1.5rem;
     }
-    to {
-        transform: scale(1);
-        opacity: 1;
+    
+    .celebration-content h1 {
+        margin-bottom: 1rem;
+    }
+    
+    .celebration-content p {
+        margin-bottom: 0.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .celebration-content {
+        padding: 1rem;
+    }
+    
+    .celebration-content h1 {
+        font-size: 2rem;
+    }
+    
+    .celebration-content p {
+        font-size: 1.5rem;
     }
 }
 

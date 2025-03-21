@@ -2,30 +2,28 @@ class WheelPicker {
     constructor() {
         this.canvas = document.getElementById('wheelCanvas');
         this.ctx = this.canvas.getContext('2d');
-        this.names = [
-            'Ram',
-            'Shyam',
-            'Radhe',
-            'Rahul',
-            'Ayush',
-            'Atharv',
-            'Kusum'
+        this.names = this.getStoredNames();
+        this.colors = [
+            '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEEAD',
+            '#D4A5A5', '#9B59B6', '#3498DB', '#E67E22', '#1ABC9C'
         ];
-        this.currentRotation = 0;
         this.isSpinning = false;
-        this.wheelColor = '#FF5733';
-        this.textColor = '#FFFFFF';
-        this.spinDuration = 5;
-        this.lastWinner = null;
-        this.confettiPieces = [];
+        this.currentRotation = 0;
+        this.targetRotation = 0;
         this.spinningSound = document.getElementById('spinningSound');
         this.celebrationSound = document.getElementById('celebrationSound');
         this.winningSound = document.getElementById('winningSound');
+        this.confettiPieces = [];
         this.confettiInterval = null;
+        this.wheelColor = this.getStoredColor('wheelColor', '#FF5733');
+        this.textColor = this.getStoredColor('textColor', '#FFFFFF');
+        this.spinDuration = this.getStoredNumber('spinDuration', 5);
+        this.lastWinner = null;
 
         this.setupCanvas();
         this.setupEventListeners();
-        this.drawWheel(); // Draw wheel immediately with default names
+        this.setupInitialColor();
+        this.drawWheel();
     }
 
     setupCanvas() {
@@ -58,14 +56,28 @@ class WheelPicker {
             });
         });
 
-        // Set initial active color
-        colorBoxes[0].classList.add('active');
-
         // Window resize
         window.addEventListener('resize', () => {
             this.setupCanvas();
             this.drawWheel();
         });
+    }
+
+    setupInitialColor() {
+        // Set initial color in color picker
+        const colorBoxes = document.querySelectorAll('.color-box');
+        colorBoxes.forEach(box => {
+            if (box.dataset.color === this.wheelColor) {
+                box.classList.add('active');
+            } else {
+                box.classList.remove('active');
+            }
+        });
+
+        // Set initial color in color input
+        document.getElementById('wheelColor').value = this.wheelColor;
+        document.getElementById('textColor').value = this.textColor;
+        document.getElementById('spinDuration').value = this.spinDuration;
     }
 
     drawWheel() {
@@ -275,34 +287,42 @@ class WheelPicker {
 
     updateWheelColor(color) {
         this.wheelColor = color;
+        this.setCookie('wheelColor', color);
         this.drawWheel();
     }
 
     updateTextColor(color) {
         this.textColor = color;
+        this.setCookie('textColor', color);
         this.drawWheel();
     }
 
     updateSpinDuration(duration) {
         this.spinDuration = parseInt(duration);
+        this.setCookie('spinDuration', duration);
     }
 
     addNames() {
         const input = document.getElementById('nameInput');
         const newNames = input.value.split('\n').filter(name => name.trim());
-        this.names = [...this.names, ...newNames];
-        input.value = '';
-        this.drawWheel();
+        if (newNames.length > 0) {
+            this.names = [...this.names, ...newNames];
+            this.storeNames();
+            input.value = '';
+            this.drawWheel();
+        }
     }
 
     clearNames() {
         this.names = [];
+        this.storeNames();
         this.drawWheel();
     }
 
     removeWinner() {
         if (this.lastWinner) {
             this.names = this.names.filter(name => name !== this.lastWinner);
+            this.storeNames();
             this.drawWheel();
             this.hideWinnerAnnouncement();
         }
@@ -310,6 +330,62 @@ class WheelPicker {
 
     keepWinner() {
         this.hideWinnerAnnouncement();
+    }
+
+    // Cookie management methods
+    setCookie(name, value, days = 7) {
+        const date = new Date();
+        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+        const expires = `expires=${date.toUTCString()}`;
+        // Add SameSite and Secure attributes for better cookie handling
+        document.cookie = `${name}=${encodeURIComponent(value)};${expires};path=/;SameSite=Strict`;
+    }
+
+    getCookie(name) {
+        const cookieName = `${name}=`;
+        const cookies = document.cookie.split(';');
+        for (let cookie of cookies) {
+            cookie = cookie.trim();
+            if (cookie.indexOf(cookieName) === 0) {
+                return decodeURIComponent(cookie.substring(cookieName.length, cookie.length));
+            }
+        }
+        return null;
+    }
+
+    getStoredColor(name, defaultValue) {
+        return this.getCookie(name) || defaultValue;
+    }
+
+    getStoredNumber(name, defaultValue) {
+        const value = this.getCookie(name);
+        return value ? parseInt(value) : defaultValue;
+    }
+
+    getStoredNames() {
+        const storedNames = this.getCookie('names');
+        try {
+            if (!storedNames) return [];
+            const parsedNames = JSON.parse(storedNames);
+            return Array.isArray(parsedNames) ? parsedNames : [];
+        } catch (e) {
+            console.error('Error parsing stored names:', e);
+            return [];
+        }
+    }
+
+    storeNames() {
+        try {
+            if (!Array.isArray(this.names)) {
+                console.error('Names is not an array:', this.names);
+                return;
+            }
+            const namesString = JSON.stringify(this.names);
+            this.setCookie('names', namesString);
+            console.log('Stored names:', this.names); // Debug log
+        } catch (e) {
+            console.error('Error storing names:', e);
+        }
     }
 }
 
